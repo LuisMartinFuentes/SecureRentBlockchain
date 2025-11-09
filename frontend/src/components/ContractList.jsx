@@ -1,6 +1,6 @@
 export default function ContractList({ contracts, signContract }) {
   return (
-    <div className="bg-white p-6 rounded shadow-md">
+    <div className="select-none cursor-default animate-fadeInUp bg-black p-6 rounded shadow-md mt-10 py-10 px-120">
       <h3 className="text-xl font-semibold mb-4">Contratos disponibles</h3>
       {contracts.length === 0 ? (
         <p>No hay contratos aún.</p>

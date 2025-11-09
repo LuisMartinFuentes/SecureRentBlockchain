@@ -14,18 +14,36 @@ export default function Landlord() {
   const [rent, setRent] = useState("");
   const [error, setError] = useState("");
 
-  //Conexion con MetaMask
-  async function connectWallet() {
-    try {
-      if (!window.ethereum) throw new Error("MetaMask no está instalado");
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      setAccount(accounts[0]);
-      setError("");
-    } catch (err) {
-      console.error("Error al conectar MetaMask:", err);
-      setError(err.message || "No se pudo conectar a MetaMask");
+// Conexión con MetaMask
+async function connectWallet() {
+  try {
+    if (!window.ethereum)
+      throw new Error("MetaMask no está instalado");
+
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    setAccount(accounts[0]);
+    setError("");
+
+  } catch (err) {
+    console.error("Error al conectar MetaMask:", err);
+
+    // Si el usuario canceló el inicio de sesión
+    if (err.code === 4001 || err.message.includes("User rejected")) {
+      setError("Se debe iniciar sesión en MetaMask para continuar.");
+    } 
+    // Si MetaMask no está instalado
+    else if (err.message.includes("MetaMask")) {
+      setError("MetaMask no está instalado en este navegador.");
+    } 
+    // Cualquier otro error
+    else {
+      setError(err.message || "No se pudo conectar a MetaMask.");
     }
   }
+}
 
   //Creacion de contrato con Blockchain 
   async function createContract() {
@@ -50,18 +68,18 @@ export default function Landlord() {
   }
 
   return (
-    <div className="select-none cursor-default p-6 flex flex-col items-center justify-center text-center">
-      <h2 className="select-none cursor-default text-2xl font-semibold mb-4"
+    <div className="animate-fadeInUp select-none cursor-default p-6 flex flex-col items-center justify-center text-center mt-12">
+      <h2 className="select-none cursor-default text-5xl font-semibold -mt-1"
       >Panel del Arrendador</h2>
 
       {!account ? (
          <>
-          <MetaMaskFox3D onClick={connectWallet} className="-mt-25 metamask-logo-float" />
+          <MetaMaskFox3D onClick={connectWallet} className="-mt-15 metamask-logo-float" />
 
           <button
             onClick={connectWallet}
-            className=" select-none cursor-default mt-8 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transform hover:scale-110 
-            transition-all duration-300"
+            className="select-none cursor-default mt-8 bg-green-500 hover:bg-green-600 text-white text-xl py-2 px-12
+            rounded transform hover:scale-110 transition-all duration-300"
           >
             Conectar MetaMask
           </button>

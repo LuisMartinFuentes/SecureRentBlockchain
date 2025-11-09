@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 export default function ContractDetails({ contract, id, signContract }) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md mb-4">
+    <div className="select-none cursor-default bg-white p-6 rounded-2xl shadow-md mb-4">
       <h3 className="font-bold text-lg mb-2">Contrato #{id}</h3>
       <p><strong>Arrendador:</strong> {contract.landlord}</p>
       <p><strong>Inquilino:</strong> {contract.tenant || "No asignado"}</p>

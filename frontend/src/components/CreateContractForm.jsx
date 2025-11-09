@@ -6,7 +6,7 @@ export default function CreateContractForm({
   onSubmit,
 }) {
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-md mx-auto">
+    <div className="select-none cursor-default animate-fadeInUp bg-black p-6 rounded shadow-md max-w-md mx-auto mt-10">
       <h3 className="text-xl font-semibold mb-4">Crear nuevo contrato</h3>
       <input
         type="text"
