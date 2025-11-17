@@ -30,6 +30,7 @@ export default function ContractList({ contracts, signContract, account }) {
             {/* Mostrar botón solo si:
                 El contrato no está firmado
                 El usuario NO es el arrendador
+                checar todo en MetaMask para poder asegurar el funcionamiento.
             */}
             {!contract.isSigned && contract.landlord.toLowerCase() !== account.toLowerCase() && (
               <button
