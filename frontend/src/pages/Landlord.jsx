@@ -33,14 +33,17 @@ async function connectWallet() {
     // Si el usuario canceló el inicio de sesión
     if (err.code === 4001 || err.message.includes("User rejected")) {
       setError("Se debe iniciar sesión en MetaMask para continuar.");
+      setTimeout(() => setError(""), 4000);
     } 
     // Si MetaMask no está instalado
     else if (err.message.includes("MetaMask")) {
       setError("MetaMask no está instalado en este navegador.");
+      setTimeout(() => setError(""), 4000);
     } 
     // Cualquier otro error
     else {
       setError(err.message || "No se pudo conectar a MetaMask.");
+      setTimeout(() => setError(""), 4000);
     }
   }
 }
@@ -51,6 +54,7 @@ async function connectWallet() {
 
       if (!property.trim() || !rent.trim()) {
       setError("Se deben llenar todos los campos antes de crear el contrato.");
+      setTimeout(() => setError(""), 4000);
       return;
     }
       const provider = new ethers.BrowserProvider(window.ethereum);

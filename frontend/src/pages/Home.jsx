@@ -17,14 +17,14 @@ export default function Home({ setView }) {
         <button
           onClick={() => setView("landlordInfo")}
           className=" select-none cursor-default bg-purple-600 hover:bg-purple-700 text-white 
-          text-lg font-semibold px-14 py-2 rounded transition-all duration-300"
+          text-lg font-semibold px-14 py-2 rounded hover:scale-110 transition-all duration-300 mr-2 "
         >
           Soy Arrendador
         </button>
         <button
           onClick={() => setView("tenantInfo")}
           className="select-none cursor-default bg-purple-600 hover:bg-purple-700 text-white 
-          text-lg font-semibold px-14 py-2 rounded transition-all duration-300"
+          text-lg font-semibold px-14 py-2 rounded hover:scale-110 transition-all duration-300"
         >
           Soy Arrendatario
         </button>

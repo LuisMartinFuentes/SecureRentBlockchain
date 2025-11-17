@@ -1,0 +1,4 @@
+DJI Mini 2 Prop Guard Top and Bottom Also Works on 4K by LoadMaster1 on Thingiverse: https://www.thingiverse.com/thing:4968319
+
+Summary:
+This is a resize and updated set of propeller guards for the DJI Mini 2.  It may also work on the Mini, but I did not have one to test.  It fits perfectly on the Mini 2 as you can see in the photos.  There are two different files.  One for the top and the other for the bottom.  There is a 2mm difference in size and they are labeled "TOP" and "BOTTOM" to make it easier to identify which one is which.I printed this using PLA, RED, on my Creality Ender 3 Max using a 0.3mm nozzle.  I had this size nozzle already installed.  No reason for this print, as I believe a 0.4mm or larger would work well too.This print requires supports.  You can see how I had it with the included photo from Cura preview.This is an easy print that doesn't take a lot of time.  Enjoy!

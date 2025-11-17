@@ -6,25 +6,41 @@ export default function CreateContractForm({
   onSubmit,
 }) {
   return (
-    <div className="select-none cursor-default animate-fadeInUp bg-black p-6 rounded shadow-md max-w-md mx-auto mt-10">
-      <h3 className="text-xl font-semibold mb-4">Crear nuevo contrato</h3>
+    <div className="select-none cursor-default animate-fadeInUp 
+                    bg-black/40 backdrop-blur-md 
+                    p-6 rounded-2xl shadow-xl 
+                    w-full max-w-md mx-auto mt-10">
+
+      <h3 className="text-2xl font-semibold mb-6 text-center">
+        Crear Nuevo Contrato
+      </h3>
+
       <input
         type="text"
         placeholder="Dirección de la propiedad"
         value={property}
         onChange={(e) => setProperty(e.target.value)}
-        className="border w-full p-2 mb-3 rounded"
+        className="bg-gray-900/60 border border-gray-700 text-white
+                   w-full p-3 mb-4 rounded-xl placeholder-gray-400 
+                   focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
+
       <input
         type="number"
-        placeholder="Renta (en ETH)"
+        placeholder="Renta mensual (ETH)"
         value={rent}
         onChange={(e) => setRent(e.target.value)}
-        className="border w-full p-2 mb-3 rounded"
+        className="bg-gray-900/60 border border-gray-700 text-white
+                   w-full p-3 mb-4 rounded-xl placeholder-gray-400 
+                   focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
+
       <button
         onClick={onSubmit}
-        className="bg-green-500 text-white px-4 py-2 rounded w-full"
+        className="w-full py-3 rounded-xl 
+                   bg-green-500 hover:bg-green-600 
+                   text-white font-semibold 
+                   transition transform hover:scale-105 shadow-lg"
       >
         Crear contrato
       </button>

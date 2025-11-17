@@ -8,11 +8,11 @@ export default function ContractDetails({ contract, id, signContract }) {
       <p><strong>Inquilino:</strong> {contract.tenant || "No asignado"}</p>
       <p><strong>Dirección del inmueble:</strong> {contract.propertyAddress}</p>
       <p><strong>Renta:</strong> {ethers.formatEther(contract.rentAmount)} ETH</p>
-      <p><strong>Firmado:</strong> {contract.isSigned ? "✅ Sí" : "❌ No"}</p>
+      <p><strong>Firmado:</strong> {contract.isSigned ? "Sí" : "No"}</p>
 
       {!contract.isSigned && (
         <button
-          className="mt-3 bg-indigo-500 hover:bg-indigo-600 text-white py-1 px-4 rounded"
+          className="mt-3 bg-purple-500 hover:bg-purple-600 text-white py-1 px-4 rounded"
           onClick={() => signContract(id)}
         >
           Firmar Contrato
