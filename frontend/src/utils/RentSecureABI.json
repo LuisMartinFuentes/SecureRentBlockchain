@@ -1,11 +1,43 @@
 [
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "cancelContract",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
-				"name": "id",
+				"name": "contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "ContractCancelled",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "contractId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "propertyId",
 				"type": "uint256"
 			},
 			{
@@ -16,15 +48,21 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
-				"name": "propertyAddress",
-				"type": "string"
+				"internalType": "address",
+				"name": "tenant",
+				"type": "address"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "rentAmount",
+				"name": "monthlyRent",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "totalMonths",
+				"type": "uint8"
 			}
 		],
 		"name": "ContractCreated",
@@ -34,9 +72,22 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
-				"name": "id",
+				"name": "contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "ContractFinished",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "contractId",
 				"type": "uint256"
 			},
 			{
@@ -53,16 +104,11 @@
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "_propertyAddress",
+				"name": "_description",
 				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_rentAmount",
-				"type": "uint256"
 			}
 		],
-		"name": "createContract",
+		"name": "createProperty",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -71,57 +117,128 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_id",
-				"type": "uint256"
-			}
-		],
-		"name": "signContract",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "allContracts",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "id",
+				"name": "_propertyId",
 				"type": "uint256"
 			},
 			{
 				"internalType": "address",
-				"name": "landlord",
+				"name": "_tenant",
 				"type": "address"
 			},
 			{
+				"internalType": "uint256",
+				"name": "_monthlyRent",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8",
+				"name": "_totalMonths",
+				"type": "uint8"
+			}
+		],
+		"name": "createRentContract",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "payMonthlyRent",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "propertyId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "PropertyCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "contractId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
 				"internalType": "address",
 				"name": "tenant",
 				"type": "address"
 			},
 			{
-				"internalType": "string",
-				"name": "propertyAddress",
-				"type": "string"
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
 			},
 			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "monthsPaid",
+				"type": "uint8"
+			}
+		],
+		"name": "RentPaid",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
-				"name": "rentAmount",
+				"name": "_propertyId",
 				"type": "uint256"
 			},
 			{
 				"internalType": "bool",
-				"name": "isSigned",
+				"name": "_available",
 				"type": "bool"
 			}
 		],
-		"stateMutability": "view",
+		"name": "setPropertyAvailability",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "signRentContract",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -153,6 +270,11 @@
 				"type": "uint256"
 			},
 			{
+				"internalType": "uint256",
+				"name": "propertyId",
+				"type": "uint256"
+			},
+			{
 				"internalType": "address",
 				"name": "landlord",
 				"type": "address"
@@ -163,33 +285,138 @@
 				"type": "address"
 			},
 			{
-				"internalType": "string",
-				"name": "propertyAddress",
-				"type": "string"
-			},
-			{
 				"internalType": "uint256",
-				"name": "rentAmount",
+				"name": "monthlyRent",
 				"type": "uint256"
 			},
 			{
-				"internalType": "bool",
-				"name": "isSigned",
-				"type": "bool"
+				"internalType": "uint8",
+				"name": "totalMonths",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "monthsPaid",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "startDate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "endDate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "enum RentSecure.ContractStatus",
+				"name": "status",
+				"type": "uint8"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getAllContracts",
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_landlord",
+				"type": "address"
+			}
+		],
+		"name": "getContractsByLandlord",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_tenant",
+				"type": "address"
+			}
+		],
+		"name": "getContractsByTenant",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_propertyId",
+				"type": "uint256"
+			}
+		],
+		"name": "getProperty",
 		"outputs": [
 			{
 				"components": [
 					{
 						"internalType": "uint256",
 						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "description",
+						"type": "string"
+					},
+					{
+						"internalType": "bool",
+						"name": "isAvailable",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct RentSecure.Property",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_contractId",
+				"type": "uint256"
+			}
+		],
+		"name": "getRentContract",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "propertyId",
 						"type": "uint256"
 					},
 					{
@@ -203,24 +430,134 @@
 						"type": "address"
 					},
 					{
-						"internalType": "string",
-						"name": "propertyAddress",
-						"type": "string"
-					},
-					{
 						"internalType": "uint256",
-						"name": "rentAmount",
+						"name": "monthlyRent",
 						"type": "uint256"
 					},
 					{
-						"internalType": "bool",
-						"name": "isSigned",
-						"type": "bool"
+						"internalType": "uint8",
+						"name": "totalMonths",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "monthsPaid",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum RentSecure.ContractStatus",
+						"name": "status",
+						"type": "uint8"
 					}
 				],
-				"internalType": "struct RentSecure.RentContract[]",
+				"internalType": "struct RentSecure.RentContract",
 				"name": "",
-				"type": "tuple[]"
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "landlordContracts",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "properties",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "isAvailable",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "propertyCounter",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tenantContracts",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
