@@ -1,4 +1,4 @@
 import abi from "./RentSecureABI.json";
 
-export const contractAddress = "0x48fE1bB592d27aF903126B03a7dcEA2881c7c463";
+export const contractAddress = "0x7c16F21f5A707ef000B30E1028AbF2addDd2Ec5b";
 export const contractABI = abi;
