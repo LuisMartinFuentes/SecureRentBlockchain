@@ -3,20 +3,27 @@ import { useWeb3 } from "../../context/Web3Context";
 import ErrorAlert from "../../components/ErrorAlert";
 import { ethers } from "ethers";
 
-export default function LandlordCreateContract() {
+export default function LandlordCreateContract({ initialData }) {
   const { account, contract } = useWeb3();
   const [properties, setProperties] = useState([]);
   const [tenant, setTenant] = useState("");
   const [rent, setRent] = useState("");
   const [months, setMonths] = useState("");
   const [propertyId, setPropertyId] = useState("");
+  const [txHash, setTxHash] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (contract && account) {
       loadProperties();
     }
-  }, [contract, account]);
+
+    if (initialData) {
+      if (initialData.propertyId) setPropertyId(initialData.propertyId);
+      if (initialData.tenant) setTenant(initialData.tenant);
+      if (initialData.rent) setRent(initialData.rent);
+    }
+  }, [contract, account, initialData]);
 
   async function loadProperties() {
     try {
@@ -65,6 +72,7 @@ export default function LandlordCreateContract() {
 
       await tx.wait();
 
+      setTxHash(tx.hash);
       alert("Contrato creado");
       setTenant("");
       setRent("");
@@ -135,6 +143,20 @@ export default function LandlordCreateContract() {
         >
           Crear contrato
         </button>
+
+        {txHash && (
+          <div className="mt-4 p-3 bg-green-900/50 border border-green-500 rounded text-center">
+            <p className="text-green-300 mb-2">¡Transacción Exitosa!</p>
+            <a
+              href={`https://sepolia.etherscan.io/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline break-all"
+            >
+              Ver en Etherscan: {txHash}
+            </a>
+          </div>
+        )}
       </div>
 
       <ErrorAlert message={error} />

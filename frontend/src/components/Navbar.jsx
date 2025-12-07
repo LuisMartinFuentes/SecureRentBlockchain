@@ -13,6 +13,8 @@ export default function Navbar({ setView, account, onLogout }) {
   const [openNotifications, setOpenNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
+  const [unreadCount, setUnreadCount] = useState(0);
+
   // Cargar notificaciones
   useEffect(() => {
     if (contract && account) {
@@ -65,10 +67,27 @@ export default function Navbar({ setView, account, onLogout }) {
           time: "Reciente"
         }));
 
-      setNotifications([...signedNotifications, ...paymentReceived, ...paymentSent]);
+      const allNotifications = [...signedNotifications, ...paymentReceived, ...paymentSent];
+      setNotifications(allNotifications);
+
+      // Calcular no leídas
+      const readIds = JSON.parse(localStorage.getItem(`secureRent_read_${account}`) || "[]");
+      const unread = allNotifications.filter(n => !readIds.includes(n.id)).length;
+      setUnreadCount(unread);
 
     } catch (err) {
       console.error("Error cargando notificaciones", err);
+    }
+  }
+
+  function markAsRead() {
+    if (unreadCount > 0) {
+      const readIds = JSON.parse(localStorage.getItem(`secureRent_read_${account}`) || "[]");
+      const newIds = notifications.map(n => n.id);
+      // Combinar y guardar únicos
+      const uniqueIds = [...new Set([...readIds, ...newIds])];
+      localStorage.setItem(`secureRent_read_${account}`, JSON.stringify(uniqueIds));
+      setUnreadCount(0);
     }
   }
 
@@ -100,13 +119,12 @@ export default function Navbar({ setView, account, onLogout }) {
       <div className="flex space-x-6 items-center">
 
         {/* MENU ARRENDADOR */}
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => setOpenLandlordMenu(true)}
+          onMouseLeave={() => setOpenLandlordMenu(false)}
+        >
           <button
-            onClick={() => {
-              setOpenLandlordMenu(!openLandlordMenu);
-              setOpenTenantMenu(false);
-              setOpenUserMenu(false);
-            }}
             className="bg-white text-purple-800 px-4 py-2 rounded
             transform hover:scale-110 transition-transform duration-300"
           >
@@ -114,7 +132,7 @@ export default function Navbar({ setView, account, onLogout }) {
           </button>
 
           {openLandlordMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-purple-800 shadow-lg rounded z-50">
+            <div className="absolute right-0 mt-0 w-48 bg-white text-purple-800 shadow-lg rounded z-50 pt-2">
               <button
                 onClick={() => setView("landlordProperties")}
                 className="block w-full text-left px-4 py-2 hover:bg-purple-100"
@@ -135,25 +153,17 @@ export default function Navbar({ setView, account, onLogout }) {
               >
                 Historial de Cobros
               </button>
-
-              <button
-                onClick={() => setView("landlordCreate")}
-                className="block w-full text-left px-4 py-2 hover:bg-purple-100"
-              >
-                Crear Contrato
-              </button>
             </div>
           )}
         </div>
 
         {/* MENU ARRENDATARIO */}
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => setOpenTenantMenu(true)}
+          onMouseLeave={() => setOpenTenantMenu(false)}
+        >
           <button
-            onClick={() => {
-              setOpenTenantMenu(!openTenantMenu);
-              setOpenLandlordMenu(false);
-              setOpenUserMenu(false);
-            }}
             className="bg-white text-purple-800 px-4 py-2 rounded
             transform hover:scale-110 transition-transform duration-300"
           >
@@ -161,7 +171,7 @@ export default function Navbar({ setView, account, onLogout }) {
           </button>
 
           {openTenantMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-purple-800 shadow-lg rounded z-50">
+            <div className="absolute right-0 mt-0 w-48 bg-white text-purple-800 shadow-lg rounded z-50 pt-2">
               <button
                 onClick={() => setView("tenantContracts")}
                 className="block w-full text-left px-4 py-2 hover:bg-purple-100"
@@ -180,9 +190,15 @@ export default function Navbar({ setView, account, onLogout }) {
         </div>
 
         {/* NOTIFICACIONES */}
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => {
+            setOpenNotifications(true);
+            markAsRead();
+          }}
+          onMouseLeave={() => setOpenNotifications(false)}
+        >
           <button
-            onClick={() => setOpenNotifications(!openNotifications)}
             className="p-2 mr-4 text-white hover:text-yellow-300 transition-colors relative"
           >
             {/* Bell Icon SVG */}
@@ -190,9 +206,9 @@ export default function Navbar({ setView, account, onLogout }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             {/* Badge Real */}
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute top-1 right-1 block h-4 w-4 rounded-full bg-red-500 ring-2 ring-white text-xs flex items-center justify-center font-bold">
-                {notifications.length}
+                {unreadCount}
               </span>
             )}
           </button>
@@ -205,20 +221,19 @@ export default function Navbar({ setView, account, onLogout }) {
         </div>
 
         {/* USUARIO / WALLET */}
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => setOpenUserMenu(true)}
+          onMouseLeave={() => setOpenUserMenu(false)}
+        >
           <button
-            onClick={() => {
-              setOpenUserMenu(!openUserMenu);
-              setOpenTenantMenu(false);
-              setOpenLandlordMenu(false);
-            }}
             className="bg-purple-700 px-4 py-2 rounded hover:bg-purple-800 transition-all"
           >
             {shortAccount} ▼
           </button>
 
           {openUserMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-purple-800 shadow-lg rounded z-50">
+            <div className="absolute right-0 mt-0 w-48 bg-white text-purple-800 shadow-lg rounded z-50 pt-2">
               <button
                 onClick={() => {
                   setShowAccountInfo(true);

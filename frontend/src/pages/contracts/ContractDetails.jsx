@@ -6,7 +6,28 @@ import ErrorAlert from "../../components/ErrorAlert";
 export default function ContractDetails({ contractData, setView }) {
     const { contract, account } = useWeb3();
     const [loading, setLoading] = useState(false);
+    const [txHash, setTxHash] = useState("");
+    const [creationTxHash, setCreationTxHash] = useState("");
     const [error, setError] = useState("");
+
+    // Cargar hash de creación del contrato
+    React.useEffect(() => {
+        if (contract && contractData) {
+            getCreationTx();
+        }
+    }, [contract, contractData]);
+
+    async function getCreationTx() {
+        try {
+            const filter = contract.filters.ContractCreated(contractData.id);
+            const events = await contract.queryFilter(filter);
+            if (events.length > 0) {
+                setCreationTxHash(events[0].transactionHash);
+            }
+        } catch (err) {
+            console.error("Error buscando tx de creación", err);
+        }
+    }
 
     if (!contractData) return <div className="text-white text-center mt-10">No se seleccionó ningún contrato.</div>;
 
@@ -19,8 +40,9 @@ export default function ContractDetails({ contractData, setView }) {
             setLoading(true);
             const tx = await contract.signRentContract(contractData.id);
             await tx.wait();
+            setTxHash(tx.hash);
             alert("¡Contrato firmado exitosamente! Ahora está ACTIVO.");
-            setView("tenantContracts"); // Regresar para recargar
+            // setView("tenantContracts"); // No regresar para mostrar el link
         } catch (err) {
             console.error(err);
             setError("Error al firmar el contrato.");
@@ -37,8 +59,9 @@ export default function ContractDetails({ contractData, setView }) {
                 value: contractData.monthlyRent.toString()
             });
             await tx.wait();
+            setTxHash(tx.hash);
             alert("¡Renta pagada exitosamente!");
-            setView("tenantPayments"); // Ir al historial
+            // setView("tenantPayments"); // No regresar para mostrar el link
         } catch (err) {
             console.error(err);
             setError("Error al pagar la renta.");
@@ -53,8 +76,9 @@ export default function ContractDetails({ contractData, setView }) {
             setLoading(true);
             const tx = await contract.cancelContract(contractData.id);
             await tx.wait();
+            setTxHash(tx.hash);
             alert("¡Contrato cancelado exitosamente!");
-            setView("landlordContracts"); // Regresar a la lista
+            // setView("landlordContracts"); // No regresar para mostrar el link
         } catch (err) {
             console.error(err);
             setError("Error al cancelar el contrato.");
@@ -71,7 +95,19 @@ export default function ContractDetails({ contractData, setView }) {
                 <button onClick={() => setView(isLandlord ? "landlordContracts" : "tenantContracts")} className="text-purple-300 hover:text-white">
                     &larr; Volver
                 </button>
-                <h1 className="text-3xl font-bold">Contrato #{contractData.id.toString()}</h1>
+                <div className="text-right">
+                    <h1 className="text-3xl font-bold">Contrato #{contractData.id.toString()}</h1>
+                    {creationTxHash && (
+                        <a
+                            href={`https://sepolia.etherscan.io/tx/${creationTxHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:text-blue-300 underline"
+                        >
+                            Ver en Etherscan
+                        </a>
+                    )}
+                </div>
             </div>
 
             {/* DOCUMENTO VISUAL */}
@@ -95,7 +131,7 @@ export default function ContractDetails({ contractData, setView }) {
                     <p>
                         <strong className="text-purple-400">Propiedad ID:</strong> {contractData.propertyId.toString()} <br />
                         <strong className="text-purple-400">Renta Mensual:</strong> {ethers.formatEther(contractData.monthlyRent)} ETH <br />
-                        <strong className="text-purple-400">Duración:</strong> {contractData.totalMonths} meses <br />
+                        <strong className="text-purple-400">Duración:</strong> {contractData.totalMonths.toString()} meses <br />
                         <strong className="text-purple-400">Estado Actual:</strong> <span className={`font-bold ${Number(contractData.status) === 0 ? "text-yellow-400" : Number(contractData.status) === 1 ? "text-green-400" : "text-gray-400"}`}>
                             {statusMap[Number(contractData.status)]}
                         </span>
@@ -173,6 +209,22 @@ export default function ContractDetails({ contractData, setView }) {
                     </button>
                 )}
             </div>
+
+            {
+                txHash && (
+                    <div className="mt-6 p-4 bg-green-900/50 border border-green-500 rounded text-center animate-fadeInUp">
+                        <p className="text-green-300 mb-2 text-lg font-bold">¡Transacción Confirmada!</p>
+                        <a
+                            href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 underline break-all text-lg"
+                        >
+                            Ver transacción en Etherscan
+                        </a>
+                    </div>
+                )
+            }
 
             <ErrorAlert message={error} />
         </div>

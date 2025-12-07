@@ -26,7 +26,7 @@ export default function LandlordContracts({ setView }) {
                     propertyId: data.propertyId,
                     landlord: account, // Since we are fetching by landlord, account is the landlord
                     tenant: data.tenant,
-                    monthlyRent: Number(data.monthlyRent),
+                    monthlyRent: data.monthlyRent,
                     monthsPaid: data.monthsPaid,
                     totalMonths: data.totalMonths,
                     status: data.status,
@@ -89,7 +89,7 @@ export default function LandlordContracts({ setView }) {
                                     <p>Propiedad: {c.propertyId.toString()}</p>
                                     <p>Inquilino: {c.tenant.slice(0, 6)}...{c.tenant.slice(-4)}</p>
                                     <p>Renta mensual: {ethers.formatEther(c.monthlyRent)} ETH</p>
-                                    <p>Pagado: {c.monthsPaid}/{c.totalMonths} meses</p>
+                                    <p>Pagado: {c.monthsPaid.toString()}/{c.totalMonths.toString()} meses</p>
                                     <p>Estado: {Number(c.status) === 1 ? "Activo" : Number(c.status) === 2 ? "Finalizado" : "Cancelado"}</p>
                                 </div>
                             ))}

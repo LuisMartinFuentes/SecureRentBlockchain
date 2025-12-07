@@ -29,7 +29,7 @@ export default function TenantContracts({ setView }) {
             propertyId: data.propertyId,
             landlord: data.landlord,
             tenant: data.tenant,
-            monthlyRent: Number(data.monthlyRent),
+            monthlyRent: data.monthlyRent,
             monthsPaid: data.monthsPaid,
             totalMonths: data.totalMonths,
             status: data.status,
@@ -92,7 +92,7 @@ export default function TenantContracts({ setView }) {
                   <h2 className="text-xl font-semibold">Contrato #{c.id}</h2>
                   <p>Propiedad: {c.propertyId}</p>
                   <p>Renta mensual: {ethers.formatEther(c.monthlyRent)} ETH</p>
-                  <p>Pagado: {c.monthsPaid}/{c.totalMonths} meses</p>
+                  <p>Pagado: {c.monthsPaid.toString()}/{c.totalMonths.toString()} meses</p>
                   <p>Estado: {Number(c.status) === 1 ? "Activo" : Number(c.status) === 2 ? "Finalizado" : "Cancelado"}</p>
                 </div>
               ))}

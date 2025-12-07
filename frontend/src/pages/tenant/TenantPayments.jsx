@@ -16,20 +16,21 @@ export default function TenantPayments() {
 
   async function loadPayments() {
     try {
-      const ids = await contract.getContractsByTenant(account);
-      const list = [];
+      // Filtrar eventos RentPaid donde el tenant sea el usuario actual
+      const filter = contract.filters.RentPaid(null, account);
+      const events = await contract.queryFilter(filter);
 
-      for (let id of ids) {
-        const data = await contract.getRentContract(id);
+      // Mapear eventos a objetos legibles
+      const list = events.map((e) => ({
+        id: e.args[0].toString(), // contractId
+        amount: e.args[2], // amount
+        monthsPaid: e.args[3].toString(), // monthsPaid
+        txHash: e.transactionHash,
+        blockNumber: e.blockNumber
+      }));
 
-        list.push({
-          id,
-          monthlyRent: Number(data.monthlyRent),
-          monthsPaid: data.monthsPaid,
-          totalMonths: data.totalMonths,
-          lastPayment: data.monthsPaid > 0 ? "Pagado" : "Sin pagos",
-        });
-      }
+      // Ordenar por bloque (más reciente primero)
+      list.sort((a, b) => b.blockNumber - a.blockNumber);
 
       setPayments(list);
     } catch (err) {
@@ -46,15 +47,22 @@ export default function TenantPayments() {
         {payments.length === 0 ? (
           <p>No hay pagos registrados.</p>
         ) : (
-          payments.map((p) => (
-            <div key={p.id} className="bg-purple-700/40 p-4 rounded shadow">
-              <h2 className="text-xl font-semibold">Contrato #{p.id}</h2>
+          payments.map((p, idx) => (
+            <div key={idx} className="bg-purple-700/40 p-4 rounded shadow flex flex-col md:flex-row justify-between items-center gap-4">
+              <div>
+                <h2 className="text-xl font-semibold">Contrato #{p.id}</h2>
+                <p className="text-gray-300">Monto: {ethers.formatEther(p.amount)} ETH</p>
+                <p className="text-gray-300">Mes pagado: #{p.monthsPaid}</p>
+              </div>
 
-
-
-              <p>Renta mensual: {ethers.formatEther(p.monthlyRent)} ETH</p>
-              <p>Meses pagados: {p.monthsPaid}/{p.totalMonths}</p>
-              <p>Último pago: {p.lastPayment}</p>
+              <a
+                href={`https://sepolia.etherscan.io/tx/${p.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
+              >
+                Ver en Etherscan ↗
+              </a>
             </div>
           ))
         )}

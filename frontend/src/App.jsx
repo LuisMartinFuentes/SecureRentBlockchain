@@ -22,6 +22,7 @@ export default function App() {
   const [view, setView] = useState("home");
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
+  const [createContractData, setCreateContractData] = useState(null);
 
   if (loading)
     return (
@@ -30,6 +31,8 @@ export default function App() {
       </div>
     );
 
+
+
   function handleViewChange(newView, data = null) {
     setView(newView);
     if (data && data.property) {
@@ -37,6 +40,9 @@ export default function App() {
     }
     if (data && data.contract) {
       setSelectedContract(data.contract);
+    }
+    if (data && data.createContractData) {
+      setCreateContractData(data.createContractData);
     }
   }
 
@@ -78,8 +84,8 @@ export default function App() {
 
             {/* LANDLORD */}
             {view === "landlordInfo" && <LandlordInfo />}
-            {view === "landlordProperties" && <LandlordProperties />}
-            {view === "landlordCreate" && <LandlordCreateContract />}
+            {view === "landlordProperties" && <LandlordProperties setView={handleViewChange} />}
+            {view === "landlordCreate" && <LandlordCreateContract initialData={createContractData} />}
             {view === "landlordContracts" && <LandlordContracts setView={handleViewChange} />}
             {view === "landlordPayments" && <LandlordPayments />}
 

@@ -15,18 +15,34 @@ export default function PropertyDetails({ property, setView }) {
     }
 
     // Parsear descripción, imagen, ubicación y precio
-    // Formato esperado: Desc |IMG| Url |LOC| Location |PRICE| Price
-    const parts = property.description.split(" |IMG| ");
-    const descText = parts[0];
-    const rest = parts[1] || "";
+    // Si la propiedad viene de ExploreProperties, ya tiene los campos parseados.
+    // Si viene de otro lado (raw), intentamos parsear.
 
-    const locParts = rest.split(" |LOC| ");
-    const imgUrl = locParts[0] || "/housePlaceholder.jpg";
-    const locRest = locParts[1] || "";
+    let descText = property.description;
+    let imgUrl = property.image || "/housePlaceholder.jpg";
+    let location = property.location || "";
+    let priceEst = property.priceEst || "0";
 
-    const priceParts = locRest.split(" |PRICE| ");
-    const location = priceParts[0] || "";
-    const priceEst = priceParts[1] || "0";
+    // Si no tenemos precio estimado (es "0") pero la descripción tiene tags, parseamos de nuevo (por si acaso)
+    if (priceEst === "0" || !property.image) {
+        if (descText.includes(" |PRICE| ")) {
+            const parts = descText.split(" |PRICE| ");
+            priceEst = parts[1];
+            descText = parts[0];
+        }
+
+        if (descText.includes(" |LOC| ")) {
+            const parts = descText.split(" |LOC| ");
+            location = parts[1];
+            descText = parts[0];
+        }
+
+        if (descText.includes(" |IMG| ")) {
+            const parts = descText.split(" |IMG| ");
+            imgUrl = parts[1];
+            descText = parts[0];
+        }
+    }
 
     const isOwner = account && property.owner && property.owner.toLowerCase() === account.toLowerCase();
 
@@ -58,7 +74,7 @@ export default function PropertyDetails({ property, setView }) {
             )}
 
             <p className="text-2xl font-bold text-purple-400 mb-4">
-                {Number(property.price) > 0 ? ethers.formatEther(property.price) : priceEst} ETH <span className="text-sm text-gray-400">/ mes</span>
+                {priceEst} ETH <span className="text-sm text-gray-400">/ mes</span>
             </p>
 
             <div className="flex items-center gap-3 text-gray-300 mb-4">
