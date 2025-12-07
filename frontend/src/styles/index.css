@@ -28,6 +28,10 @@
   animation: floatSlow 4s ease-in-out infinite;
 }
 
+.animate-float {
+  animation: floatSlow 3s ease-in-out infinite;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

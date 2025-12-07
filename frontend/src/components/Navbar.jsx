@@ -118,6 +118,19 @@ export default function Navbar({ setView, account, onLogout }) {
       {/* MENÚS */}
       <div className="flex space-x-6 items-center">
 
+        {/* VER PROPIEDADES */}
+        <div
+          onClick={() => setView("explore")}
+          className="flex items-center space-x-2 cursor-pointer bg-white text-purple-800 px-4 py-2 rounded-full shadow-md transform hover:scale-105 transition-all duration-300"
+        >
+          <img
+            src="/Click AQUI PARA EXPLORAR LAS PROPIEDADES.png"
+            alt="Explore"
+            className="w-6 h-6 object-contain"
+          />
+          <span className="font-bold">Ver Propiedades</span>
+        </div>
+
         {/* MENU ARRENDADOR */}
         <div
           className="relative"
