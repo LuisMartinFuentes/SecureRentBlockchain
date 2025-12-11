@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useWeb3 } from "../../context/Web3Context";
 import ErrorAlert from "../../components/ErrorAlert";
 import { ethers } from "ethers";
+import { useEthPrice } from "../../hooks/useEthPrice";
 
 export default function TenantPayments() {
   const { account, contract } = useWeb3();
+  const { ethPrice } = useEthPrice();
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState("");
 
@@ -47,24 +49,28 @@ export default function TenantPayments() {
         {payments.length === 0 ? (
           <p>No hay pagos registrados.</p>
         ) : (
-          payments.map((p, idx) => (
-            <div key={idx} className="bg-purple-700/40 p-4 rounded shadow flex flex-col md:flex-row justify-between items-center gap-4">
-              <div>
-                <h2 className="text-xl font-semibold">Contrato #{p.id}</h2>
-                <p className="text-gray-300">Monto: {ethers.formatEther(p.amount)} ETH</p>
-                <p className="text-gray-300">Mes pagado: #{p.monthsPaid}</p>
-              </div>
+          payments.map((p, idx) => {
+            const amountEth = ethers.formatEther(p.amount);
+            const mxnAmount = ethPrice ? (parseFloat(amountEth) * ethPrice).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : "Cargando...";
+            return (
+              <div key={idx} className="bg-green-900/30 border border-green-600/50 p-4 rounded shadow flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Contrato #{p.id}</h2>
+                  <p className="text-gray-300">Monto: {mxnAmount} ({amountEth} ETH)</p>
+                  <p className="text-gray-300">Mes pagado: #{p.monthsPaid}</p>
+                </div>
 
-              <a
-                href={`https://sepolia.etherscan.io/tx/${p.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
-              >
-                Ver en Etherscan ↗
-              </a>
-            </div>
-          ))
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${p.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm transition-colors"
+                >
+                  Ver en Etherscan
+                </a>
+              </div>
+            );
+          })
         )}
       </div>
 

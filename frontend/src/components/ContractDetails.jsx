@@ -7,8 +7,8 @@ export default function ContractDetails({ contract, account, close, sign }) {
     contract.landlord.toLowerCase() === account.toLowerCase();
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center px-6">
-      <div className="bg-zinc-800 text-white p-6 rounded-2xl shadow-xl max-w-lg w-full animate-fadeInUp">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn">
+      <div className="bg-gray-800/95 backdrop-blur-xl text-white p-6 rounded-2xl shadow-2xl max-w-lg w-full relative border border-gray-600">
 
         <h2 className="text-3xl font-bold mb-4">
           Detalles del Contrato #{Number(contract.id)}
@@ -39,7 +39,7 @@ export default function ContractDetails({ contract, account, close, sign }) {
           {!contract.isSigned && !isLandlord && (
             <button
               onClick={() => sign(contract.id)}
-              className="bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded"
+              className="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded"
             >
               Firmar Contrato
             </button>

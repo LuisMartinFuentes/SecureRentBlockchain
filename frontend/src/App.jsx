@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
@@ -24,6 +24,28 @@ export default function App() {
   const [selectedContract, setSelectedContract] = useState(null);
   const [createContractData, setCreateContractData] = useState(null);
 
+  useEffect(() => {
+    // Inicializar estado si no existe
+    if (!window.history.state) {
+      window.history.replaceState({ view: "home" }, "");
+    }
+
+    const handlePopState = (event) => {
+      if (event.state && event.state.view) {
+        setView(event.state.view);
+        if (event.state.selectedProperty) setSelectedProperty(event.state.selectedProperty);
+        if (event.state.selectedContract) setSelectedContract(event.state.selectedContract);
+        if (event.state.createContractData) setCreateContractData(event.state.createContractData);
+      } else {
+        // Fallback a home si no hay estado
+        setView("home");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   if (loading)
     return (
       <div className="text-white text-center mt-20">
@@ -31,9 +53,8 @@ export default function App() {
       </div>
     );
 
-
-
   function handleViewChange(newView, data = null) {
+    // Actualizar estado local
     setView(newView);
     if (data && data.property) {
       setSelectedProperty(data.property);
@@ -44,10 +65,22 @@ export default function App() {
     if (data && data.createContractData) {
       setCreateContractData(data.createContractData);
     }
+
+    // Actualizar historial
+    const stateToPush = {
+      view: newView,
+      selectedProperty: data?.property || (newView === view ? selectedProperty : null), // Mantener si es la misma vista, o null? Mejor simplificar
+      selectedContract: data?.contract || null,
+      createContractData: data?.createContractData || null
+    };
+
+    // Si estamos cambiando de vista, hacemos push.
+    // Por simplicidad, siempre push si cambia la vista o los datos relevantes.
+    window.history.pushState(stateToPush, "");
   }
 
   function handleLogin() {
-    setView("home");
+    handleViewChange("home");
   }
 
   function handleLogout() {
@@ -61,7 +94,7 @@ export default function App() {
       {/* NAV solo si hay sesión */}
       {account && (
         <Navbar
-          setView={setView}
+          setView={handleViewChange}
           account={account}
           onLogout={handleLogout}
         />
@@ -73,11 +106,11 @@ export default function App() {
           <Login onLogin={handleLogin} />
         ) : (
           <>
-            {view === "home" && <Home setView={setView} />}
+            {view === "home" && <Home setView={handleViewChange} />}
 
             {view === "explore" && (
               <ExploreProperties
-                setView={setView}
+                setView={handleViewChange}
                 setSelectedProperty={setSelectedProperty}
               />
             )}

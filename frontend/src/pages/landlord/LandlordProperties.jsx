@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useWeb3 } from "../../context/Web3Context";
 import ErrorAlert from "../../components/ErrorAlert";
+import StatusModal from "../../components/StatusModal";
+import { useEthPrice } from "../../hooks/useEthPrice";
 
 export default function LandlordProperties({ setView }) {
   const { account, contract, signer } = useWeb3();
+  const { ethPrice } = useEthPrice();
   const [properties, setProperties] = useState([]);
   const [newDesc, setNewDesc] = useState("");
   const [newImage, setNewImage] = useState("");
@@ -11,12 +14,32 @@ export default function LandlordProperties({ setView }) {
   const [newPrice, setNewPrice] = useState("");
   const [error, setError] = useState("");
 
+  const [currency, setCurrency] = useState("ETH"); // "ETH" or "MXN"
+  const [priceMXN, setPriceMXN] = useState("");
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info"
+  });
+
   // Cargar propiedades cuando cambie el contrato o la cuenta
   useEffect(() => {
     if (contract && account) {
       loadProperties();
     }
   }, [contract, account]);
+
+  // Actualizar conversiones cuando cambia el precio de ETH
+  useEffect(() => {
+    if (ethPrice && newPrice && currency === "ETH") {
+      setPriceMXN((parseFloat(newPrice) * ethPrice).toFixed(2));
+    } else if (ethPrice && priceMXN && currency === "MXN") {
+      setNewPrice((parseFloat(priceMXN) / ethPrice).toFixed(6));
+    }
+  }, [ethPrice]);
 
   async function loadProperties() {
     try {
@@ -52,7 +75,8 @@ export default function LandlordProperties({ setView }) {
             description: prop.description,
             isAvailable: prop.isAvailable,
             requests,
-            hasActiveContract: !!activeContract
+            hasActiveContract: !!activeContract,
+            activeContractStatus: activeContract ? activeContract.status : null
           });
         }
       }
@@ -64,7 +88,35 @@ export default function LandlordProperties({ setView }) {
     }
   }
 
+  function handlePriceChange(val) {
+    if (currency === "ETH") {
+      setNewPrice(val);
+      if (val && ethPrice) {
+        setPriceMXN((parseFloat(val) * ethPrice).toFixed(2));
+      } else {
+        setPriceMXN("");
+      }
+    } else {
+      setPriceMXN(val);
+      if (val && ethPrice) {
+        setNewPrice((parseFloat(val) / ethPrice).toFixed(6));
+      } else {
+        setNewPrice("");
+      }
+    }
+  }
+
+  function showSuccessModal(msg) {
+    setModalConfig({
+      title: "¡Éxito!",
+      message: msg,
+      type: "success"
+    });
+    setModalOpen(true);
+  }
+
   async function createProperty() {
+    setError("");
     if (!newDesc.trim()) return;
     if (!contract) {
       setError("Contrato no inicializado");
@@ -73,28 +125,60 @@ export default function LandlordProperties({ setView }) {
 
     try {
       // Concatenar descripción con imagen, ubicación y precio
-      // Formato: Desc |IMG| Url |LOC| Location |PRICE| Price
+      // Formato: Desc |IMG| Url |LOC| Location |PRICE_TYPE| Price
       let fullDesc = newDesc;
       if (newImage.trim()) fullDesc += ` |IMG| ${newImage.trim()}`;
       if (newLocation.trim()) fullDesc += ` |LOC| ${newLocation.trim()}`;
-      if (newPrice.trim()) fullDesc += ` |PRICE| ${newPrice.trim()}`;
+
+      // Save price with specific tag based on currency
+      if (currency === "MXN" && priceMXN) {
+        fullDesc += ` |PRICE_MXN| ${priceMXN}`;
+      } else if (currency === "ETH" && newPrice) {
+        fullDesc += ` |PRICE_ETH| ${newPrice}`;
+      }
+
+      // Verificar duplicados
+      // Parseamos las propiedades existentes para comparar la descripción base
+      const isDuplicate = properties.some(p => {
+        // p.description puede tener tags, extraemos la parte de texto
+        let existingDesc = p.description.split(" |IMG| ")[0].split(" |LOC| ")[0].split(" |PRICE_MXN| ")[0].split(" |PRICE_ETH| ")[0].split(" |PRICE| ")[0];
+        return existingDesc.trim().toLowerCase() === newDesc.trim().toLowerCase();
+      });
+
+      if (isDuplicate) {
+        setError("No puedes crear dos propiedades iguales (misma descripción).");
+        return;
+      }
 
       const tx = await contract.createProperty(fullDesc);
       await tx.wait();
 
-      alert("Propiedad creada");
+      showSuccessModal("Propiedad creada exitosamente");
       setNewDesc("");
       setNewImage("");
-      loadProperties();
+      setNewLocation("");
+      setNewPrice("");
+      setPriceMXN("");
       loadProperties();
     } catch (err) {
       console.error(err);
-      setError("Error al crear propiedad: " + (err.reason || err.message));
+      setError("Error al crear propiedad: ");
     }
   }
 
+  const mxnPriceDisplay = newPrice && ethPrice ? (parseFloat(newPrice) * ethPrice).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : null;
+
   return (
     <div className="p-4 md:p-6 text-white mt-4 md:mt-10 animate-fadeInUp flex flex-col items-center">
+
+      <StatusModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+      />
+
       <h2 className="text-4xl font-bold mb-4">Mis Propiedades</h2>
 
       {/* CREAR PROPIEDAD */}
@@ -125,13 +209,44 @@ export default function LandlordProperties({ setView }) {
           placeholder="Ubicación (Dirección)"
         />
 
-        <input
-          type="number"
-          value={newPrice}
-          onChange={(e) => setNewPrice(e.target.value)}
-          className="w-full p-2 rounded bg-gray-700 text-white mb-3"
-          placeholder="Precio Estimado (ETH)"
-        />
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-sm font-bold">Precio Estimado</label>
+          <div className="flex bg-gray-700 rounded p-1">
+            <button
+              onClick={() => setCurrency("ETH")}
+              className={`px-3 py-1 rounded text-sm font-bold transition-colors ${currency === "ETH" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              ETH
+            </button>
+            <button
+              onClick={() => setCurrency("MXN")}
+              className={`px-3 py-1 rounded text-sm font-bold transition-colors ${currency === "MXN" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}
+            >
+              MXN
+            </button>
+          </div>
+        </div>
+
+        <div className="relative mb-1">
+          <input
+            className="w-full p-2 rounded bg-gray-700 text-white"
+            type="number"
+            step={currency === "ETH" ? "0.0001" : "1"}
+            value={currency === "ETH" ? newPrice : priceMXN}
+            onChange={(e) => handlePriceChange(e.target.value)}
+            placeholder={currency === "ETH" ? "Ej. 0.05" : "Ej. 3500"}
+          />
+          <span className="absolute right-3 top-2 text-gray-400 font-bold">{currency}</span>
+        </div>
+
+        <div className="text-right mb-4 h-6">
+          {currency === "ETH" && newPrice && ethPrice && (
+            <p className="text-sm text-green-400">≈ {mxnPriceDisplay}</p>
+          )}
+          {currency === "MXN" && priceMXN && ethPrice && (
+            <p className="text-sm text-purple-400">≈ {newPrice} ETH</p>
+          )}
+        </div>
 
         <button
           onClick={createProperty}
@@ -147,9 +262,46 @@ export default function LandlordProperties({ setView }) {
       ) : (
         <ul className="space-y-3 w-full max-w-2xl">
           {properties.map((p, idx) => {
-            const parts = p.description.split(" |IMG| ");
-            const descText = parts[0];
-            const imgUrl = parts[1] || "";
+            // Parse description tags
+            // Format: Desc |IMG| Url |LOC| Location |PRICE_TYPE| Price
+            let descClean = p.description.split(" |IMG| ")[0].split(" |LOC| ")[0];
+
+            // Remove price tags from description
+            descClean = descClean.split(" |PRICE_MXN| ")[0].split(" |PRICE_ETH| ")[0].split(" |PRICE| ")[0];
+
+            const imgMatch = p.description.match(/\|IMG\| (.*?)( \|LOC\|| \|PRICE_MXN\|| \|PRICE_ETH\|| \|PRICE\||$)/);
+            const imgUrl = imgMatch ? imgMatch[1] : "";
+
+            const locMatch = p.description.match(/\|LOC\| (.*?)( \|PRICE_MXN\|| \|PRICE_ETH\|| \|PRICE\||$)/);
+            const location = locMatch ? locMatch[1] : "";
+
+            // Try to match specific price tags
+            const priceMxnMatch = p.description.match(/\|PRICE_MXN\| (\d+(\.\d+)?)/);
+            const priceEthMatch = p.description.match(/\|PRICE_ETH\| (\d+(\.\d+)?)/);
+            const priceLegacyMatch = p.description.match(/\|PRICE\| (\d+(\.\d+)?)/);
+
+            let displayPrice = null;
+            let rentData = { rent: "", currency: "ETH" };
+
+            if (priceMxnMatch) {
+              const mxnVal = parseFloat(priceMxnMatch[1]);
+              const ethVal = ethPrice ? (mxnVal / ethPrice).toFixed(6) : "Calculando...";
+              displayPrice = (
+                <p className="text-green-400 font-bold">
+                  Precio: {mxnVal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })} <span className="text-gray-400 font-normal">({ethVal} ETH)</span>
+                </p>
+              );
+              rentData = { rent: mxnVal, currency: "MXN" };
+            } else if (priceEthMatch || priceLegacyMatch) {
+              const ethVal = priceEthMatch ? priceEthMatch[1] : priceLegacyMatch[1];
+              const mxnVal = ethPrice ? (parseFloat(ethVal) * ethPrice).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : "Calculando...";
+              displayPrice = (
+                <p className="text-green-400 font-bold">
+                  Precio: {mxnVal} <span className="text-gray-400 font-normal">({ethVal} ETH)</span>
+                </p>
+              );
+              rentData = { rent: ethVal, currency: "ETH" };
+            }
 
             return (
               <li key={idx} className="bg-gray-800 p-4 rounded flex flex-col gap-4">
@@ -163,7 +315,9 @@ export default function LandlordProperties({ setView }) {
                   )}
                   <div className="flex-1">
                     <p><b>ID:</b> {p.id.toString()}</p>
-                    <p><b>Descripción:</b> {descText}</p>
+                    <p><b>Descripción:</b> {descClean}</p>
+                    {location && <p><b>Ubicación:</b> {location}</p>}
+                    {displayPrice}
                     <p><b>Disponible:</b> {p.isAvailable ? "Sí" : "No"}</p>
                   </div>
                 </div>
@@ -183,16 +337,12 @@ export default function LandlordProperties({ setView }) {
                           </span>
                           <button
                             onClick={() => {
-                              // Extraer precio de la descripción si existe
-                              // Formato: ... |PRICE| 0.001
-                              const priceMatch = p.description.match(/\|PRICE\| (\d+(\.\d+)?)/);
-                              const price = priceMatch ? priceMatch[1] : "";
-
                               setView("landlordCreate", {
                                 createContractData: {
                                   propertyId: p.id.toString(),
                                   tenant: req.tenant,
-                                  rent: price
+                                  rent: rentData.rent,
+                                  currency: rentData.currency
                                 }
                               });
                             }}
@@ -206,8 +356,8 @@ export default function LandlordProperties({ setView }) {
                   </div>
                 )}
                 {p.hasActiveContract && (
-                  <div className="bg-green-900 p-2 rounded mt-2 text-center text-sm text-green-200">
-                    Propiedad con contrato activo o pendiente.
+                  <div className={`p-2 rounded mt-2 text-center text-sm ${Number(p.activeContractStatus) === 0 ? "bg-yellow-900 text-yellow-200" : "bg-green-900 text-green-200"}`}>
+                    {Number(p.activeContractStatus) === 0 ? "Pendiente de firma" : "Propiedad con contrato activo"}
                   </div>
                 )}
               </li>

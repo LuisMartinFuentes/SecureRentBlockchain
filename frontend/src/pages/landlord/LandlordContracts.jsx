@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useWeb3 } from "../../context/Web3Context";
 import ErrorAlert from "../../components/ErrorAlert";
 import { ethers } from "ethers";
+import { useEthPrice } from "../../hooks/useEthPrice";
 
 export default function LandlordContracts({ setView }) {
     const { account, contract } = useWeb3();
+    const { ethPrice } = useEthPrice();
     const [contracts, setContracts] = useState([]);
     const [error, setError] = useState("");
 
@@ -53,21 +55,25 @@ export default function LandlordContracts({ setView }) {
                         <p className="text-gray-400">No tienes contratos pendientes de firma.</p>
                     ) : (
                         <div className="space-y-4">
-                            {contracts.filter(c => Number(c.status) === 0).map((c) => (
-                                <div
-                                    key={c.id}
-                                    className="bg-yellow-900/30 border border-yellow-600/50 p-4 rounded shadow cursor-pointer hover:bg-yellow-900/50 transition-all"
-                                    onClick={() => setView("contractDetails", { contract: c })}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <h2 className="text-xl font-semibold text-yellow-200">Contrato #{c.id}</h2>
-                                        <span className="bg-yellow-600 text-white text-xs px-2 py-1 rounded">Esperando Firma</span>
+                            {contracts.filter(c => Number(c.status) === 0).map((c) => {
+                                const rentEth = ethers.formatEther(c.monthlyRent);
+                                const mxnPrice = ethPrice ? (parseFloat(rentEth) * ethPrice).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : "Cargando...";
+                                return (
+                                    <div
+                                        key={c.id}
+                                        className="bg-yellow-900/30 border border-yellow-600/50 p-4 rounded shadow cursor-pointer hover:bg-yellow-900/50 transition-all"
+                                        onClick={() => setView("contractDetails", { contract: c })}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <h2 className="text-xl font-semibold text-yellow-200">Contrato #{c.id}</h2>
+                                            <span className="bg-yellow-600 text-white text-xs px-2 py-1 rounded">Esperando Firma</span>
+                                        </div>
+                                        <p className="text-gray-300 mt-2">Propiedad: {c.propertyId.toString()}</p>
+                                        <p className="text-gray-300">Renta: {mxnPrice} ({rentEth} ETH)</p>
+                                        <p className="text-gray-400 text-sm mt-1">Inquilino: {c.tenant.slice(0, 6)}...{c.tenant.slice(-4)}</p>
                                     </div>
-                                    <p className="text-gray-300 mt-2">Propiedad: {c.propertyId.toString()}</p>
-                                    <p className="text-gray-300">Renta: {ethers.formatEther(c.monthlyRent)} ETH</p>
-                                    <p className="text-gray-400 text-sm mt-1">Inquilino: {c.tenant.slice(0, 6)}...{c.tenant.slice(-4)}</p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -79,24 +85,27 @@ export default function LandlordContracts({ setView }) {
                         <p className="text-gray-400">No tienes contratos activos.</p>
                     ) : (
                         <div className="space-y-4">
-                            {contracts.filter(c => Number(c.status) > 0).map((c) => (
-                                <div
-                                    key={c.id}
-                                    className="bg-purple-700/40 p-4 rounded shadow cursor-pointer hover:bg-purple-700/60 transition-all"
-                                    onClick={() => setView("contractDetails", { contract: c })}
-                                >
-                                    <h2 className="text-xl font-semibold">Contrato #{c.id}</h2>
-                                    <p>Propiedad: {c.propertyId.toString()}</p>
-                                    <p>Inquilino: {c.tenant.slice(0, 6)}...{c.tenant.slice(-4)}</p>
-                                    <p>Renta mensual: {ethers.formatEther(c.monthlyRent)} ETH</p>
-                                    <p>Pagado: {c.monthsPaid.toString()}/{c.totalMonths.toString()} meses</p>
-                                    <p>Estado: {Number(c.status) === 1 ? "Activo" : Number(c.status) === 2 ? "Finalizado" : "Cancelado"}</p>
-                                </div>
-                            ))}
+                            {contracts.filter(c => Number(c.status) > 0).map((c) => {
+                                const rentEth = ethers.formatEther(c.monthlyRent);
+                                const mxnPrice = ethPrice ? (parseFloat(rentEth) * ethPrice).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) : "Cargando...";
+                                return (
+                                    <div
+                                        key={c.id}
+                                        className="bg-purple-700/40 p-4 rounded shadow cursor-pointer hover:bg-purple-700/60 transition-all"
+                                        onClick={() => setView("contractDetails", { contract: c })}
+                                    >
+                                        <h2 className="text-xl font-semibold">Contrato #{c.id}</h2>
+                                        <p>Propiedad: {c.propertyId.toString()}</p>
+                                        <p>Inquilino: {c.tenant.slice(0, 6)}...{c.tenant.slice(-4)}</p>
+                                        <p>Renta mensual: {mxnPrice} ({rentEth} ETH)</p>
+                                        <p>Pagado: {c.monthsPaid.toString()}/{c.totalMonths.toString()} meses</p>
+                                        <p>Estado: {Number(c.status) === 1 ? "Activo" : Number(c.status) === 2 ? "Finalizado" : "Cancelado"}</p>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
-
             </div>
 
             <ErrorAlert message={error} />
