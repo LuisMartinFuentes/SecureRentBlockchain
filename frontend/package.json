@@ -13,6 +13,9 @@
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
     "ethers": "^6.15.0",
+    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "three": "^0.181.0"

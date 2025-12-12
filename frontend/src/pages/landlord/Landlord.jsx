@@ -6,6 +6,7 @@ import CreateContractForm from "../components/CreateContractForm";
 import ErrorAlert from "../components/ErrorAlert";
 import MetaMaskFox3D from "../components/MetaMaskFox3D";
 import LandlordContractList from "../components/LandlordContractList";
+import StatusModal from "../components/StatusModal";
 
 THREE.Cache.enabled = true;
 
@@ -15,6 +16,14 @@ export default function Landlord() {
   const [rent, setRent] = useState("");
   const [error, setError] = useState("");
   const [myContracts, setMyContracts] = useState([]);
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: "",
+    message: "",
+    type: "info"
+  });
 
   // Cargar mis contratos cuando ya existe "account"
   useEffect(() => {
@@ -68,9 +77,19 @@ export default function Landlord() {
     }
   }
 
+  function showSuccessModal(msg) {
+    setModalConfig({
+      title: "¡Éxito!",
+      message: msg,
+      type: "success"
+    });
+    setModalOpen(true);
+  }
+
   // Crear nuevo contrato
   async function createContract() {
     try {
+      setError("");
       if (!property.trim() || !rent.trim()) {
         setError("Se deben llenar todos los campos antes de crear el contrato.");
         setTimeout(() => setError(""), 4000);
@@ -84,7 +103,7 @@ export default function Landlord() {
       const tx = await contract.createContract(property, ethers.parseEther(rent));
       await tx.wait();
 
-      alert("Contrato creado correctamente");
+      showSuccessModal("Contrato creado correctamente");
 
       setProperty("");
       setRent("");
@@ -107,7 +126,15 @@ export default function Landlord() {
 
   return (
     <div className="animate-fadeInUp select-none cursor-default p-6 flex flex-col items-center justify-center text-center mt-12">
-      
+
+      <StatusModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+      />
+
       <h2 className="text-5xl font-semibold -mt-1">
         Panel del Arrendador
       </h2>
