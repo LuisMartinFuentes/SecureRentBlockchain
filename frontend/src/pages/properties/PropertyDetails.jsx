@@ -20,7 +20,6 @@ export default function PropertyDetails({ property, setView }) {
     });
 
 
-
     const [hasActiveContract, setHasActiveContract] = useState(false);
 
     useEffect(() => {
